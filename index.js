@@ -59,9 +59,9 @@ async function parseArray(array) {
     let length = arr[2].slice(1);
     let album = arr[3].slice(1);
     let albumFine = new Array();
-    for (i=0;i<album.length-1;i++){
+    for (i = 0; i < album.length - 1; i++) {
         let albumString = album[i] + "";
-        albumString = albumString.replace('()','');
+        albumString = albumString.replace('()', '');
         albumFine.push(albumString);
     }
     let dictionary = titles.map((title, nIndex) => (
@@ -80,10 +80,15 @@ async function parseArray(array) {
 
 router.post('/suggest', function (req, res) {
     let artist = req.body.artist + "";
-    digSimilarArtists(artist.replace(' ','+')).then(function (body) {
+    digSimilarArtists(artist.replace(' ', '+')).then(function (body) {
+
         returnArray(body).then(function (parsedBody) {
-            parseArray(parsedBody).then(function (object) {
-                res.json(object)
+            parseArray(parsedBody).then(function (suggestions) {
+                var $ = cheerio.load(body);
+                var a = $('#trackset_link').each(function () {
+                    var trackset = $(this).attr('href');
+                    res.json({ trackset, suggestions })
+                })
             });
         });
     });
